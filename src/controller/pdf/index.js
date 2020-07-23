@@ -26,7 +26,7 @@ class PDF {
         // ctx.set('Content-Disposition', 'attachment; filename=' + 'Report.xlsx')
         return {
             code: 200,
-            url: `https://${ctx.headers.host}/jiaban/${file.name}.xlsx`
+            url: `http://${ctx.headers.host}/jiaban/${file.name}.xlsx`
         }
         // return { code: 200, allRows, rows }
     }

@@ -21,10 +21,10 @@ let DB_CONFIG = {
 }
 
 // let mysql_conf = {
-//     dbname: '',
-//     uname: '',
-//     upwd: '',
-//     host: '',
+//     dbname: 'emicall_cc_man',
+//     uname: 'emicall_cr_s',
+//     upwd: 'Emiknit_e23456',
+//     host: 'emicall-cr-ext.mysql.rds.aliyuncs.com',
 //     port: 3306,
 //     dialect: 'mysql',
 //     pool: {
@@ -35,10 +35,10 @@ let DB_CONFIG = {
 // }
 
 let mysql_conf = {
-    dbname: '',
-    uname: '',
-    upwd: '',
-    host: '',
+    dbname: 'wx',
+    uname: 'caoshiyuan',
+    upwd: '123456',
+    host: '192.144.170.209',
     port: 3306,
     dialect: 'mysql',
     pool: {

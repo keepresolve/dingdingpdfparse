@@ -39,7 +39,7 @@
 
     function init() {
         //数据表
-        fetch(`/query?query=select table_name from information_schema.tables where table_schema='emicall_cc_man'`)
+        fetch(`/query?query=select table_name from information_schema.tables where table_schema='wx'`)
             .then(function (response) {
                 return response.json();
             })

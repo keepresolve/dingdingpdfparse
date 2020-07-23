@@ -7,6 +7,15 @@
         {
             "type": "node",
             "request": "attach",
+            "name": "vsssssss",
+            "address": "192.144.170.209",
+            "port": 9229,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/home/ubuntu/app/yingke/meiyingying/wx-miniapp-meiyingying" // 工作目录
+        },
+        {
+            "type": "node",
+            "request": "attach",
             "name": "Attach by Process ID",
             "processId": "${command:PickProcess}"
         },
