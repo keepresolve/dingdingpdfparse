@@ -23,7 +23,7 @@ jspm_packages/
 
 # TypeScript v1 declaration files
 typings/
-
+jiaban/
 # Optional npm cache directory
 .npm
 
