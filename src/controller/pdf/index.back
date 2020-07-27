@@ -4,7 +4,7 @@ let fs = require('fs'),
     PDFParser = require('pdf2json'),
     nodeExcel = require('excel-export')
 
-
+let pdfParser = new PDFParser()
 
 class PDF {
     constructor() {}
@@ -18,17 +18,17 @@ class PDF {
         let file = ctx.request.files['file']
         let loadPDFR = await this.loadPDF(file)
         if (!loadPDFR) return { code: 500, msg: '加载pdf失败' }
-        let { allRows, cols, obj } = loadPDFR
-        const data = this.generatorWord(cols, allRows)
+        let { allRows, rows, arr, obj } = loadPDFR
+        const data = this.generatorWord(arr, allRows)
         const error = await this.writeXLXS(data, file.name)
         if (error) return { code: 500, error }
-        ctx.set('Content-Type', 'application/vnd.openxmlformats')
-        ctx.set('Content-Disposition', 'attachment; filename=' + 'Report.xlsx')
+        // ctx.set('Content-Type', 'application/vnd.openxmlformats')
+        // ctx.set('Content-Disposition', 'attachment; filename=' + 'Report.xlsx')
         return {
             code: 200,
             allRows,
-            // rows,
-            cols,
+            rows,
+            arr,
             obj,
             url: `http://${ctx.headers.host}/jiaban/${file.name}.xlsx`
         }
@@ -43,7 +43,7 @@ class PDF {
                     let content = row['R'].map(v => v.T).join()
                     content = content ? content.replace(/ /g, '') : ''
                     text = text ? text.replace(/ /g, '') : ''
-                    if (content.search(text) != -1) {
+                    if (content == text) {
                         Object.assign(oRow, {
                             x: row.x,
                             y: row.y,
@@ -57,7 +57,7 @@ class PDF {
             const allKeys = Object.keys(allRows).filter(
                 v => v.split('_')[0] == oRow.y
             )
-            oRow.rowArr = allKeys.map(v => {
+            oRow.contentArr = allKeys.map(v => {
                 const current = allRows[v]
                 return {
                     x: current.x,
@@ -68,14 +68,14 @@ class PDF {
         }
         return oRow
     }
-    generatorWord(cols, allRows) {
+    generatorWord(rows, allRows) {
         const nameRow = this.getRows('申请人', allRows)
         const name = nameRow
-            ? nameRow['rowArr'][1]
-                ? nameRow['rowArr'][1]['text']
+            ? nameRow['contentArr'][1]
+                ? nameRow['contentArr'][1]['text']
                 : ''
             : ''
-        let columnName = [
+        let cols = [
             '姓名',
             '日期',
             '加班时间',
@@ -86,22 +86,9 @@ class PDF {
             '到达地',
             '其他'
         ]
-
-        const beiginCont = cols['开始时间']['content']
-        const endinCont = cols['结束时间']['content']
-        const hours = cols['时长']['content']
-        let rows = hours.map((v, index) => {
-            return [
-                name,
-                beiginCont[index].slice(0, 10),
-                `${beiginCont[index].slice(-5)}-${endinCont[index].slice(-5)}`,
-                v,
-                v > 4 ? '40' : '20'
-            ]
-        })
         let conf = {
             name: 'mysheet',
-            cols: columnName.map((v, i) => {
+            cols: cols.map((v, i) => {
                 return {
                     caption: v,
                     type: v == '餐费' ? 'number' : 'string',
@@ -111,7 +98,10 @@ class PDF {
                     width: v == '日期' || v == '加班时间' ? 40 : 20
                 }
             }),
-            rows
+            rows: rows.map(v => {
+                v[0] = name || v[0]
+                return v
+            })
         }
         console.log('申请人', nameRow)
         let data = nodeExcel.execute(conf)
@@ -128,12 +118,11 @@ class PDF {
     }
     loadPDF(file) {
         return new Promise(resolve => {
-            let pdfParser = new PDFParser()
             pdfParser.on('pdfParser_dataError', errData => resolve(false))
             pdfParser.on('pdfParser_dataReady', pdfData => {
                 // fs.writeFile('./pdf2json/test/F1040EZ.json', JSON.stringify())
                 // resolve(pdfParser.getRawTextContent())
-                let cols = {}
+                let rows = {}
                 let allRows = {}
                 let obj = this.transferData(pdfData.formImage.Pages)
                 obj.forEach(v => {
@@ -141,8 +130,8 @@ class PDF {
                         if (!allRows[`${v.y}_${v.x}`]) {
                             let str = (v.R || []).map(s => s.T).join()
                             allRows[`${v.y}_${v.x}`] = v
-                            if (/^(开始时间|结束时间|时长|加班原因)$/.test(str))
-                                cols[str] = {
+                            if (/^加班时间(\d).*$/.test(str))
+                                rows[str] = {
                                     x: v.x,
                                     y: v.y,
                                     text: (v['R'] || []).map(j => j.T).join()
@@ -150,58 +139,42 @@ class PDF {
                         }
                     })
                 })
-
                 let keys = Object.keys(allRows)
-                let begingY = cols['开始时间']['y']
-                let endRow = this.getRows('总时长', allRows)
-                let endY = endRow['y']
-                for (const key in cols) {
-                    if (cols.hasOwnProperty(key)) {
-                        let currentCol = cols[key]
-                        const allKeys = keys.filter(v => {
-                            let X = v.split('_')[1]
-                            let Y = v.split('_')[0]
-                            return (
-                                X == currentCol['x'] && Y < endY && begingY < Y
-                            )
-                        })
-                        let contentText = ''
-                        currentCol['cols'] = allKeys.map(v => {
-                            const content = allRows[v]
-                            const text = (content['R'] || [])
-                                .map(j => j.T)
-                                .join()
-                            contentText += text
+                for (const key in rows) {
+                    if (rows.hasOwnProperty(key)) {
+                        const row = rows[key]
+                        const allKeys = keys.filter(
+                            v => v.split('_')[0] == row.y
+                        )
+                        row.contentArr = allKeys.map(v => {
+                            const current = allRows[v]
                             return {
-                                x: content.x,
-                                y: content.y,
-                                text
+                                x: current.x,
+                                y: current.y,
+                                text: (current['R'] || []).map(j => j.T).join()
                             }
                         })
-                        cols[key]['content'] = []
-                        let length = contentText.length
-                        let start = 0
-                        // |结束时间|时长|加班原因
-                        if (key == '开始时间' || key == '结束时间') {
-                            while (start + 10 < length) {
-                                cols[key]['content']['push'](
-                                    contentText.slice(start, start + 16)
-                                )
-                                start += 16
-                            }
-                        }
-                        if (key == '时长') {
-                            cols[key]['content'] = contentText.split('小时')
-                            cols[key]['content'].length =
-                                cols[key]['content'].length - 1
-                        }
-                        cols['contentText'] = contentText
+                        const hours = parseFloat(row.contentArr[3]['text']) //加班时长
+                        const beginDate = row.contentArr[1]['text']
+                        const endDate = row.contentArr[2]['text']
+                        const day = beginDate.slice(0, 10) //加班日期
+                        const beginTime = beginDate.slice(-5) //加班开始时间
+                        const endTime = endDate.slice(-5) //加班开始时间
+                        row.contentArr[1]['text'] = String(
+                            day.replace(/-/g, '/')
+                        )
+                        row.contentArr[2]['text'] = beginTime + '-' + endTime
+                        row.contentArr[4]['text'] = String(
+                            hours > 1 ? (hours >= 8 ? 40 : 20) : 0
+                        )
                     }
                 }
+                let arr = Object.keys(rows).map(v => {
+                    return rows[v]['contentArr'].map(j => j.text)
+                })
 
-                resolve({ allRows, cols, obj })
+                resolve({ allRows, rows, arr, obj })
             })
-            
             pdfParser.loadPDF(file.path)
         })
     }
