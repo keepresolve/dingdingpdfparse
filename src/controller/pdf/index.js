@@ -96,7 +96,7 @@ class PDF {
                 beiginCont[index].slice(0, 10),
                 `${beiginCont[index].slice(-5)}-${endinCont[index].slice(-5)}`,
                 v,
-                v > 4 ? '40' : '20'
+                v >= 8 ? '40' : '20'
             ]
         })
         let conf = {
