@@ -3,5 +3,6 @@ module.exports = {
     upload: require('./upload'),
     login: require('./login'),
     download: require('./download'),
-    pdf: require('./pdf')
+    pdf: require('./pdf'),
+    api: require('./api')
 }

@@ -70,6 +70,13 @@
             })
     }
     function search(sql) {
+        // fetch(`/find?query=${sql}`)
+        //     .then(function (response) {
+        //         return response.json();
+        //     })
+        //     .then(function (myJson) {
+        //             console.log({myJson})
+        //     })
         fetch(`/query?query=${sql}`)
             .then(function (response) {
                 return response.json();

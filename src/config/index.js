@@ -35,11 +35,11 @@ let DB_CONFIG = {
 // }
 
 let mysql_conf = {
-    dbname: 'wx',
-    uname: 'caoshiyuan',
-    upwd: '123456',
-    host: '192.144.170.209',
-    port: 3306,
+    dbname: process.env.mysqlDbname ||  'learn',
+    uname: process.env.mysqlUname ||'caoshiyuan',
+    upwd: process.env.mysqlUpwd || '123456',
+    host: process.env.mysqlHost || '192.144.170.209',
+    port: process.env.mysqlPort ||  3306,
     dialect: 'mysql',
     pool: {
         max: 5,

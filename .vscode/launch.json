@@ -4,14 +4,25 @@
     // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
         {
-            "type": "node",
+            "name": "Attach to Chrome",
+            "port": 9222,
             "request": "attach",
-            "name": "vsssssss",
+            "type": "pwa-chrome",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
             "address": "192.144.170.209",
-            "port": 9229,
             "localRoot": "${workspaceFolder}",
-            "remoteRoot": "/home/ubuntu/app/yingke/meiyingying/wx-miniapp-meiyingying" // 工作目录
+            "name": "Attach to Remote",
+            "port": 9229,
+            "remoteRoot": "/home/ubuntu/app/upload/dingdingpdfparse",
+            "request": "attach",
+            // "skipFiles": [
+            //     "<node_internals>/**"
+            // ],
+            "type": "pwa-node"
         },
         {
             "type": "node",
@@ -23,13 +34,13 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceFolder}/src/app.js"
+            "program": "${workspaceFolder}\\src\\app.js"
         },
         {
             "type": "node",
             "request": "launch",
             "name": "启动程序",
-            "program": "${workspaceFolder}/src/app.js"
+            "program": "${workspaceFolder}\\src\\app.js"
         }
     ]
 }
